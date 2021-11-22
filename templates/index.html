@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+            crossorigin="anonymous"></script>
+
+    <title>Eschborn Report</title>
+
+    <meta property="og:title" content="에쉬본 리포트"/>
+    <meta property="og:description" content="독일 내 한인 회사 알아보기"/>
+    <meta property="og:image" content="{{ url_for('static', filename='ogimage.png') }}"/>
+
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            font-family: 'Jua', sans-serif;
+        }
+
+        .item-img {
+            width: 800px;
+            height: 300px;
+
+            background-image: url("https://w.namu.la/s/cdb67e009ce11c0ab333738d30787316188cd984f49811d557e73e4303955adc59642c290767b6a1ff34f910babe19f5e83ac390089e3d824a8aa2a847a7000be33ae0ef1eed8006aef8fee83af0a9bd");
+            background-position: center;
+            background-size: cover;
+        }
+
+        .price {
+            font-size: 20px;
+        }
+
+        .item-desc {
+            width: 800px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .item-order {
+            width: 800px;
+            margin-bottom: 30px;
+        }
+
+        .btn-order {
+            margin: auto;
+            width: 150px;
+
+            display: block;
+        }
+
+        .wrap {
+            width: 800px;
+            margin: auto;
+        }
+
+        .rate {
+            color: blue;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            padding: 8 px;
+            border-bottom : 1px;
+        }
+        tr:hover {background-color: #F5F5F5;}
+
+    </style>
+
+    <script>
+        $(document).ready(function () {
+            get_rate();
+            listing();
+        });
+
+        function listing() {
+            $.ajax({
+                type: "GET",
+                url: "/order",
+                data: {},
+                success: function (response) {
+                    if (response["result"] == "success") {
+                        let orders = response['orders'];
+                        for (let i = 0; i < orders.length; i++) {
+                            let name = orders[i]['name'];
+                            let count = orders[i]['count'];
+                            let address = orders[i]['address'];
+                            let phone = orders[i]['phone'];
+
+                            let temp_html = `<tr>
+                                                <th scope="row">${name}</th>
+                                                <td>${count}</td>
+                                                <td>${address}</td>
+                                                <td>${phone}</td>
+                                            </tr>`
+                            $('#orders-box').append(temp_html)
+                        }
+                    }
+                }
+            })
+        }
+
+        function get_rate() {
+            $.ajax({
+                type: "GET",
+                url: "https://exchange.jaeheon.kr:23490/query/EURKRW",
+                data: {},
+                success: function (response) {
+                    let now_rate = response['EURKRW'][0];
+                    $('#now-rate').text(now_rate);
+                }
+            })
+        }
+
+        function order() {
+            let name = $('#order-name').val();
+            let count = $('#order-count').val();
+            let address = $('#order-address').val();
+            let phone = $('#order-phone').val();
+
+            $.ajax({
+                type: "POST",
+                url: "/order",
+                data: {name_give: name, count_give: count, address_give: address, phone_give: phone},
+                success: function (response) {
+                    if (response["result"] == "success") {
+                        alert(response["msg"]);
+                        window.location.reload();
+                    }
+                }
+            })
+        }
+    </script>
+</head>
+
+<body>
+<div class="wrap">
+    <div class="item-img"></div>
+    <div class="item-desc">
+        <h1>독일 내 한인 회사 리뷰<span class="price"> </span></h1>
+        <p>공익을 위해 정보를 나눠봅시다.</p>
+        <p class="rate">오늘자 유로-원 환율: <span id="now-rate">1219.15</span></p>
+    </div>
+    <div class="item-order">
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text">회사명</span>
+            </div>
+            <input id="order-name" type="text" class="form-control" aria-label="Default"
+                   aria-describedby="inputGroup-sizing-default">
+        </div>
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <label class="input-group-text" for="inputGroupSelect01">근무 기간</label>
+            </div>
+            <select id="order-count" class="custom-select">
+                <option selected>-- 얼마나 근무했나요? --</option>
+                <option text ="1">1년 이내</option>
+                <option text="2">1-3년</option>
+                <option text="3">3년- 5년</option>
+                <option text="4">5년 이상</option>
+            </select>
+        </div>
+        <div class="input-group mb-4">
+            <div class="input-group-prepend">
+                <span class="input-group-text">월급 (Brutto 기준)</span>
+            </div>
+            <select id="order-address" class="custom-select">
+                <option selected>-- 얼마를 받았나요? (이상/이하) --</option>
+                <option text="1">2000 - 2300</option>
+                <option text="2">2300 - 2600</option>
+                <option text="3">2600 - 2900</option>
+                <option text="4">2900 - 3200</option>
+                <option text="5">3200 - 3500</option>
+                <option text="6">3500 - 4000</option>
+                <option text="7">4000 - 4500</option>
+                <option text="8">4500  이상 </option>
+            </select>
+
+        </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text">한줄 후기</span>
+            </div>
+            <input id="order-phone" type="text" class="form-control" aria-label="Default"
+                   aria-describedby="inputGroup-sizing-default">
+        </div>
+        <button type="button" onclick="order()" class="btn btn-primary btn-order">리뷰 남기기</button>
+    </div>
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">회사명</th>
+            <th scope="col">근무 기간</th>
+            <th scope="col">월급</th>
+            <th scope="col">한줄 후기</th>
+        </tr>
+        </thead>
+        <tbody id="orders-box">
+        </tbody>
+    </table>
+</div>
+</body>
+
+</html>
